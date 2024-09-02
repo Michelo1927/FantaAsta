@@ -1,6 +1,6 @@
 # FantaAstaGUI
 
-FantacalcioGPT è uno script Python progettato per supportare gli appassionati di fantacalcio. Questo script utilizza l'intelligenza artificiale per analizzare dati relativi ai giocatori, generare previsioni e suggerire strategie di gioco.
+FantaAstaGUI è uno script Python progettato per supportare gli appassionati di fantacalcio. Questo script utilizza l'intelligenza artificiale per analizzare dati relativi ai giocatori, generare previsioni e suggerire strategie di gioco.
 
 ## Funzionalità
 
