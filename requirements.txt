@@ -4,3 +4,5 @@ pandas
 loguru
 tqdm
 requests
+PyQt5==5.15.9
+pandas==2.1.1
