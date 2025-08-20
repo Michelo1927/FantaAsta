@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FantacalcioGPT Web</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FantastA</h1>
+            <p>Gestione Asta Fantacalcio</p>
+        </header>
+
+        <!-- Sezione gestione squadra -->
+        <div class="team-management">
+            <div class="budget-info">
+                <h3>Budget Disponibile</h3>
+                <div class="budget-display">
+                    <span id="remainingBudget">500</span> / 500 crediti
+                </div>
+                <div class="budget-spent">
+                    Spesi: <span id="spentBudget">0</span> crediti
+                </div>
+                <div class="team-count">
+                    Giocatori: <span id="teamCount">0</span>/25
+                </div>
+            </div>
+            
+            <div class="my-team">
+                <h3>La Mia Squadra</h3>
+                <div class="team-controls">
+                    <button id="clearTeamBtn" class="btn btn-secondary">Svuota Squadra</button>
+                    <button id="exportTeamBtn" class="btn btn-primary">Esporta Squadra</button>
+                </div>
+                <div id="myTeamList" class="team-list">
+                    <p class="empty-team">Nessun giocatore acquistato</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="search-panel">
+                    <h3>Carica File CSV</h3>
+                    <div class="form-group">
+                        <label for="csvFile">Seleziona file giocatori.csv:</label>
+                        <input type="file" id="csvFile" accept=".csv" class="file-input">
+                        <button type="button" id="loadCsvBtn" class="btn btn-primary">Carica CSV</button>
+                    </div>
+                    
+                    <h3>Ricerca Avanzata</h3>
+                    <form id="searchForm">
+                        <div class="form-group">
+                            <label for="playerName">Nome:</label>
+                            <input type="text" id="playerName" placeholder="Cerca per nome...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="role">Ruolo:</label>
+                            <select id="role">
+                                <option value="">Tutti</option>
+                                <option value="POR">POR</option>
+                                <option value="DIF">DIF</option>
+                                <option value="CEN">CEN</option>
+                                <option value="TRQ">TRQ</option>
+                                <option value="ATT">ATT</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="team">Squadra:</label>
+                            <select id="team">
+                                <option value="">Tutte</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="skill">Skill:</label>
+                            <select id="skill">
+                                <option value="">Tutte</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="minScore">Punteggio Min:</label>
+                            <input type="number" id="minScore" min="0" max="100" step="0.1" value="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="maxScore">Punteggio Max:</label>
+                            <input type="number" id="maxScore" min="0" max="100" step="0.1" value="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="hideAcquired"> Nascondi giocatori presi
+                            </label>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-primary">Cerca</button>
+                            <button type="button" id="resetBtn" class="btn btn-secondary">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </aside>
+
+            <main class="content">
+                <div class="status-bar">
+                    <span id="statusLabel">Carica il file CSV per iniziare</span>
+                </div>
+                
+                <div class="table-container">
+                    <table id="playersTable">
+                        <thead>
+                            <tr>
+                                <th>Stato</th>
+                                <th>Nome</th>
+                                <th>Ruolo</th>
+                                <th>Squadra</th>
+                                <th>Fantamedia 2024-2025</th>
+                                <th>Punteggio</th>
+                                <th>Trend</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+
+            <aside class="details-panel">
+                <div class="player-details">
+                    <h3>Dettagli Giocatore</h3>
+                    <div id="playerDetails" class="details-content">
+                        <p>Seleziona un giocatore dalla tabella per visualizzarne i dettagli</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Modal per acquisto giocatore -->
+    <div id="purchaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Acquista Giocatore</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Nome: <span id="modalPlayerName"></span></p>
+                <p>Ruolo: <span id="modalPlayerRole"></span></p>
+                <div class="form-group">
+                    <label for="purchasePrice">Prezzo di acquisto:</label>
+                    <input type="number" id="purchasePrice" min="1" max="500" value="1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmPurchase" class="btn btn-primary">Conferma Acquisto</button>
+                <button id="cancelPurchase" class="btn btn-secondary">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
