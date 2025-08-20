@@ -1,10 +1,7 @@
-# FantaAstaGUI
+# FantaAstaGUI || FantAstaWeb
 
-FantaAstaGUI è uno script Python progettato per supportare gli appassionati di fantacalcio. Questo script utilizza l'intelligenza artificiale per analizzare dati relativi ai giocatori, generare previsioni e suggerire strategie di gioco.
+FantaAstaGUI è uno script Python progettato per supportare gli appassionati di fantacalcio.
 
-## Funzionalità
-
-- **Analisi delle Prestazioni:** Valuta le prestazioni passate dei giocatori per fornire una previsione accurata del loro rendimento futuro.
 
 ## Requisiti
 
