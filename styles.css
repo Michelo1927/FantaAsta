@@ -75,6 +75,17 @@ header p {
     color: #4CAF50;
     font-size: 1.1em;
     font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.budget-average {
+    color: #ff9800;
+    font-size: 0.95em;
+    font-weight: 600;
+    background-color: #fff3e0;
+    padding: 8px;
+    border-radius: 5px;
+    border-left: 4px solid #ff9800;
 }
 
 .my-team {
@@ -98,6 +109,37 @@ header p {
 .team-list {
     max-height: 300px;
     overflow-y: auto;
+}
+
+/* Quick Filters */
+.quick-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.quick-filter-btn {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    background: white;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.quick-filter-btn:hover {
+    border-color: #4CAF50;
+    background-color: #f8f9fa;
+}
+
+.quick-filter-btn.active {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
 }
 
 /* Team by position layout */
@@ -509,6 +551,19 @@ tbody tr.my-player {
     padding: 20px;
 }
 
+.budget-suggestion {
+    margin: 10px 0;
+    padding: 8px;
+    background-color: #e3f2fd;
+    border-radius: 4px;
+    border-left: 4px solid #2196F3;
+}
+
+.budget-suggestion small {
+    color: #1976d2;
+    font-weight: 600;
+}
+
 .modal-footer {
     padding: 20px;
     border-top: 1px solid #eee;
@@ -558,6 +613,10 @@ tbody tr.my-player {
     
     .team-positions {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .quick-filters {
+        grid-template-columns: 1fr;
     }
 }
 

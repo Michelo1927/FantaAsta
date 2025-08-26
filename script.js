@@ -7,6 +7,7 @@ class FantacalcioApp {
         this.myTeam = [];
         this.totalBudget = 500;
         this.currentPlayerForPurchase = null;
+        this.currentQuickFilter = 'tutti';
         this.positionLimits = {
             'Portieri': 3,
             'Difensori': 8,
@@ -47,6 +48,13 @@ class FantacalcioApp {
 
         document.getElementById('exportTeamBtn').addEventListener('click', () => {
             this.exportTeam();
+        });
+
+        // Quick filters
+        document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.applyQuickFilter(e.target.dataset.filter);
+            });
         });
 
         // Modal event listeners
@@ -131,7 +139,7 @@ class FantacalcioApp {
 
             this.filteredData = [...this.data];
             this.populateFilters();
-            this.displayData(this.data);
+            this.applyQuickFilter(this.currentQuickFilter);
             this.updateStatus(`Dati caricati: ${this.data.length} giocatori`);
 
         } catch (error) {
@@ -203,6 +211,59 @@ class FantacalcioApp {
                 skillSelect.appendChild(option);
             }
         });
+    }
+
+    applyQuickFilter(filterType) {
+        if (this.data.length === 0) {
+            this.updateStatus('Carica prima un file CSV', 'error');
+            return;
+        }
+
+        this.currentQuickFilter = filterType;
+        
+        // Aggiorna UI dei bottoni
+        document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-filter="${filterType}"]`).classList.add('active');
+
+        // Reset dei filtri di ricerca quando si applica un filtro rapido
+        document.getElementById('searchForm').reset();
+        document.getElementById('minScore').value = 0;
+        document.getElementById('maxScore').value = 100;
+        document.getElementById('hideAcquired').checked = false;
+
+        let filteredData = [...this.data];
+
+        switch(filterType) {
+            case 'titolari':
+                filteredData = this.data.filter(player => {
+                    return player.Skills && player.Skills.toLowerCase().includes('titolare');
+                });
+                break;
+            
+            case 'giovani':
+                filteredData = this.data.filter(player => {
+                    const isYoung = player.Skills && player.Skills.toLowerCase().includes('giovane');
+                    const isNewSigning = player['Nuovo acquisto'] === 'True' || player['Nuovo acquisto'] === 'true';
+                    return isYoung || isNewSigning;
+                });
+                break;
+            
+            case 'rigoristi':
+                filteredData = this.data.filter(player => {
+                    return player.Skills && player.Skills.toLowerCase().includes('rigorista');
+                });
+                break;
+            
+            case 'tutti':
+            default:
+                filteredData = [...this.data];
+                break;
+        }
+
+        this.filteredData = filteredData;
+        this.displayData(this.filteredData);
     }
 
     displayData(data) {
@@ -291,6 +352,17 @@ class FantacalcioApp {
         this.displayData(this.filteredData);
     }
 
+    calculateAverageBudget() {
+        const remainingBudget = this.getRemainingBudget();
+        const remainingSlots = 25 - this.myTeam.length;
+        
+        if (remainingSlots <= 0) {
+            return 0;
+        }
+        
+        return Math.floor(remainingBudget / remainingSlots);
+    }
+
     openPurchaseModal(playerId) {
         const player = this.data.find(p => p.id === playerId);
         
@@ -312,7 +384,16 @@ class FantacalcioApp {
         this.currentPlayerForPurchase = player;
         document.getElementById('modalPlayerName').textContent = player.Nome || '';
         document.getElementById('modalPlayerRole').textContent = player.Ruolo || '';
-        document.getElementById('purchasePrice').value = 1;
+        
+        // Calcola budget medio suggerito
+        const averageBudget = this.calculateAverageBudget();
+        const remainingBudget = this.getRemainingBudget();
+        const remainingSlots = 25 - this.myTeam.length;
+        
+        document.getElementById('budgetSuggestion').textContent = 
+            `Budget medio disponibile: ${averageBudget} crediti per giocatore (${remainingSlots} slot rimanenti)`;
+        
+        document.getElementById('purchasePrice').value = Math.min(averageBudget, remainingBudget) || 1;
         document.getElementById('purchaseModal').style.display = 'block';
     }
 
@@ -433,7 +514,7 @@ class FantacalcioApp {
                         <div class="position-column ${isComplete ? 'position-complete' : ''}">
                             <div class="position-header">
                                 ${position} (${count}/${limit})
-                                <div class="position-total">Totale: ${total}€</div>
+                                <div class="position-total">Totale: ${total} crediti</div>
                             </div>
                             ${positions[position].length === 0 ? 
                                 '<div class="empty-position">Nessun giocatore</div>' :
@@ -443,7 +524,7 @@ class FantacalcioApp {
                                             <div class="team-player-name">${player.nome}</div>
                                             <div class="team-player-details">${player.squadra}</div>
                                         </div>
-                                        <div class="team-player-price">${player.price}€</div>
+                                        <div class="team-player-price">${player.price} crediti</div>
                                         <button class="remove-player" data-remove-id="${player.id}">✕</button>
                                     </div>
                                 `).join('')
@@ -467,9 +548,11 @@ class FantacalcioApp {
     updateBudgetDisplay() {
         const spent = this.myTeam.reduce((total, player) => total + player.price, 0);
         const remaining = this.totalBudget - spent;
+        const averageBudget = this.calculateAverageBudget();
         
         document.getElementById('spentBudget').textContent = spent;
         document.getElementById('remainingBudget').textContent = remaining;
+        document.getElementById('averageBudget').textContent = `Budget medio: ${averageBudget} crediti per giocatore`;
         
         const budgetDisplay = document.querySelector('.budget-display');
         if (remaining < 50) {
@@ -588,6 +671,13 @@ class FantacalcioApp {
         const maxScore = parseFloat(document.getElementById('maxScore').value);
         const hideAcquired = document.getElementById('hideAcquired').checked;
 
+        // Reset del filtro rapido se si usa la ricerca avanzata
+        this.currentQuickFilter = 'tutti';
+        document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector('[data-filter="tutti"]').classList.add('active');
+
         this.filteredData = this.data.filter(player => {
             const nameMatch = !name || (player.Nome && player.Nome.toLowerCase().includes(name));
             const roleMatch = !role || player.Ruolo === role;
@@ -625,10 +715,8 @@ class FantacalcioApp {
         document.getElementById('maxScore').value = 100;
         document.getElementById('hideAcquired').checked = false;
         
-        if (this.data.length > 0) {
-            this.filteredData = [...this.data];
-            this.displayData(this.filteredData);
-        }
+        // Reset anche il filtro rapido
+        this.applyQuickFilter('tutti');
         
         document.getElementById('playerDetails').innerHTML = 
             '<p>Seleziona un giocatore dalla tabella per visualizzarne i dettagli</p>';

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FantacalcioGPT Web</title>
+    <title>FantastA</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -25,6 +25,9 @@
                 </div>
                 <div class="team-count">
                     Giocatori: <span id="teamCount">0</span>/25
+                </div>
+                <div class="budget-average">
+                    <span id="averageBudget">Budget medio: 0 crediti per giocatore</span>
                 </div>
             </div>
             
@@ -48,6 +51,14 @@
                         <label for="csvFile">Seleziona file giocatori.csv:</label>
                         <input type="file" id="csvFile" accept=".csv" class="file-input">
                         <button type="button" id="loadCsvBtn" class="btn btn-primary">Carica CSV</button>
+                    </div>
+                    
+                    <h3>Filtri Rapidi</h3>
+                    <div class="quick-filters">
+                        <button class="quick-filter-btn" data-filter="titolari">🏆 Titolari</button>
+                        <button class="quick-filter-btn" data-filter="giovani">🌟 Giovani</button>
+                        <button class="quick-filter-btn" data-filter="rigoristi">⚽ Rigoristi</button>
+                        <button class="quick-filter-btn active" data-filter="tutti">📋 Tutti</button>
                     </div>
                     
                     <h3>Ricerca Avanzata</h3>
@@ -153,6 +164,9 @@
             <div class="modal-body">
                 <p>Nome: <span id="modalPlayerName"></span></p>
                 <p>Ruolo: <span id="modalPlayerRole"></span></p>
+                <div class="budget-suggestion">
+                    <small id="budgetSuggestion"></small>
+                </div>
                 <div class="form-group">
                     <label for="purchasePrice">Prezzo di acquisto:</label>
                     <input type="number" id="purchasePrice" min="1" max="500" value="1">
