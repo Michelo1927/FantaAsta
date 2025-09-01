@@ -37,16 +37,16 @@ header p {
     opacity: 0.9;
 }
 
-/* Mobile-Only Components */
+/* Mobile-Only Components - Hidden by default */
 .mobile-tabs {
     display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
     background: white;
     border-radius: 10px;
     padding: 15px;
     margin-bottom: 15px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
 }
 
 .mobile-tab {
@@ -77,106 +77,6 @@ header p {
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
-}
-
-.mobile-content-section {
-    display: none;
-}
-
-.mobile-content-section.active {
-    display: block;
-}
-
-.mobile-file-upload {
-    background: white;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.mobile-file-input {
-    margin-bottom: 10px;
-    width: 100%;
-}
-
-.mobile-quick-filters {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 15px;
-}
-
-.mobile-quick-filter {
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    text-align: center;
-    transition: all 0.3s;
-}
-
-.mobile-quick-filter.active {
-    background-color: #4CAF50;
-    color: white;
-    border-color: #4CAF50;
-}
-
-.mobile-team-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding: 15px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.mobile-team-controls {
-    display: flex;
-    gap: 8px;
-}
-
-.mobile-budget-details {
-    background: white;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.mobile-budget-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.mobile-budget-item:last-child {
-    border-bottom: none;
-}
-
-.mobile-team-list {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    padding: 15px;
-}
-
-.mobile-details-content {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    padding: 15px;
-}
-
-/* Desktop-Only Components */
-.desktop-only {
-    display: block;
 }
 
 /* Team Management Section */
@@ -317,12 +217,6 @@ header p {
 .position-complete .position-header {
     background-color: #c8e6c9 !important;
     color: #2e7d32;
-}
-
-.position-count {
-    font-size: 0.8em;
-    color: #666;
-    font-weight: normal;
 }
 
 .position-total {
@@ -540,7 +434,6 @@ table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
-    height: 100%;
 }
 
 thead {
@@ -734,7 +627,12 @@ tbody tr.my-player {
     border: 1px solid #f5c6cb;
 }
 
-/* Mobile Responsive Rules - ONLY for mobile screens */
+/* Desktop-only class */
+.desktop-only {
+    display: table-cell;
+}
+
+/* Mobile Responsive Rules */
 @media (max-width: 768px) {
     .container {
         padding: 10px;
@@ -762,9 +660,10 @@ tbody tr.my-player {
         display: flex;
     }
     
-    /* Hide desktop components */
-    .desktop-only {
-        display: none !important;
+    /* Adjust main layout for mobile */
+    .team-management {
+        grid-template-columns: 1fr;
+        gap: 15px;
     }
     
     .main-content {
@@ -776,6 +675,11 @@ tbody tr.my-player {
         margin-bottom: 15px;
     }
     
+    /* Hide desktop-only elements */
+    .desktop-only {
+        display: none !important;
+    }
+    
     /* Mobile table adjustments */
     table {
         font-size: 12px;
@@ -785,16 +689,23 @@ tbody tr.my-player {
         padding: 8px 5px;
     }
     
-    /* Hide some desktop table columns on mobile */
-    #playersTable th:nth-child(1),
-    #playersTable td:nth-child(1),
-    #playersTable th:nth-child(4),
-    #playersTable td:nth-child(4),
-    #playersTable th:nth-child(5),
-    #playersTable td:nth-child(5),
-    #playersTable th:nth-child(7),
-    #playersTable td:nth-child(7) {
+    /* Position panels for mobile tabs */
+    .sidebar {
         display: none;
+    }
+    
+    .details-panel {
+        display: none;
+    }
+    
+    .sidebar.mobile-active {
+        display: block;
+        margin-bottom: 15px;
+    }
+    
+    .details-panel.mobile-active {
+        display: block;
+        margin-bottom: 15px;
     }
     
     .modal-content {
@@ -816,17 +727,7 @@ tbody tr.my-player {
     }
 }
 
-/* Tablet and larger screens maintain desktop layout */
-@media (min-width: 769px) {
-    .team-management {
-        grid-template-columns: 250px 1fr;
-    }
-    
-    .main-content {
-        grid-template-columns: 300px 1fr 400px;
-    }
-}
-
+/* Tablet responsive */
 @media (max-width: 1400px) and (min-width: 769px) {
     .team-management {
         grid-template-columns: 1fr;

@@ -9,7 +9,6 @@ class FantacalcioApp {
         this.currentPlayerForPurchase = null;
         this.currentQuickFilter = 'tutti';
         this.currentMobileTab = 'players';
-        this.isMobile = window.innerWidth <= 768;
         this.positionLimits = {
             'Portieri': 3,
             'Difensori': 8,
@@ -24,64 +23,43 @@ class FantacalcioApp {
         this.updateStatus('Carica il file CSV per iniziare');
         this.updateBudgetDisplay();
         this.loadFromLocalStorage();
-        this.checkMobileView();
+        this.handleMobileView();
     }
 
-    checkMobileView() {
-        this.isMobile = window.innerWidth <= 768;
+    handleMobileView() {
+        // Set initial mobile view
+        if (window.innerWidth <= 768) {
+            this.switchMobileTab('players');
+        }
         
-        // Update resize listener
+        // Handle resize
         window.addEventListener('resize', () => {
-            const wasMobile = this.isMobile;
-            this.isMobile = window.innerWidth <= 768;
-            
-            if (wasMobile !== this.isMobile) {
-                // Device type changed, refresh display
-                this.displayData(this.filteredData);
-                this.updateBudgetDisplay();
+            if (window.innerWidth <= 768) {
+                this.switchMobileTab(this.currentMobileTab);
             }
         });
     }
 
     setupEventListeners() {
-        // Desktop CSV loading
+        // CSV loading
         document.getElementById('loadCsvBtn')?.addEventListener('click', () => {
-            this.loadCSVFile('csvFile');
+            this.loadCSVFile();
         });
 
-        // Mobile CSV loading
-        document.getElementById('mobileLoadCsvBtn')?.addEventListener('click', () => {
-            this.loadCSVFile('mobileCSVFile');
-        });
-
-        // Desktop search form
+        // Search form
         document.getElementById('searchForm')?.addEventListener('submit', (e) => {
             e.preventDefault();
-            this.searchPlayers(false);
+            this.searchPlayers();
         });
 
-        // Mobile search form
-        document.getElementById('mobileSearchForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.searchPlayers(true);
-        });
-
-        // Reset buttons
+        // Reset button
         document.getElementById('resetBtn')?.addEventListener('click', () => {
-            this.resetFilters(false);
+            this.resetFilters();
         });
 
-        document.getElementById('mobileResetBtn')?.addEventListener('click', () => {
-            this.resetFilters(true);
-        });
-
-        // Hide acquired checkboxes
+        // Hide acquired checkbox
         document.getElementById('hideAcquired')?.addEventListener('change', () => {
-            this.searchPlayers(false);
-        });
-
-        document.getElementById('mobileHideAcquired')?.addEventListener('change', () => {
-            this.searchPlayers(true);
+            this.searchPlayers();
         });
 
         // Team management buttons
@@ -89,15 +67,7 @@ class FantacalcioApp {
             this.clearTeam();
         });
 
-        document.getElementById('mobileClearTeamBtn')?.addEventListener('click', () => {
-            this.clearTeam();
-        });
-
         document.getElementById('exportTeamBtn')?.addEventListener('click', () => {
-            this.exportTeam();
-        });
-
-        document.getElementById('mobileExportTeamBtn')?.addEventListener('click', () => {
             this.exportTeam();
         });
 
@@ -108,17 +78,10 @@ class FantacalcioApp {
             });
         });
 
-        // Desktop quick filters
+        // Quick filters
         document.querySelectorAll('.quick-filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                this.applyQuickFilter(e.target.dataset.filter, false);
-            });
-        });
-
-        // Mobile quick filters
-        document.querySelectorAll('.mobile-quick-filter').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.applyQuickFilter(e.target.dataset.filter, true);
+                this.applyQuickFilter(e.target.dataset.filter);
             });
         });
 
@@ -142,7 +105,7 @@ class FantacalcioApp {
             }
         });
 
-        // Setup table sorting
+        // Table sorting
         document.querySelectorAll('th').forEach((header, index) => {
             header.addEventListener('click', () => {
                 this.sortTable(index);
@@ -157,17 +120,46 @@ class FantacalcioApp {
         document.querySelectorAll('.mobile-tab').forEach(tab => {
             tab.classList.remove('active');
         });
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
         
-        // Update content sections
-        document.querySelectorAll('.mobile-content-section').forEach(section => {
-            section.classList.remove('active');
-        });
-        document.getElementById(`mobile-${tabName}`).classList.add('active');
+        // Show/hide content based on tab
+        const sidebar = document.querySelector('.sidebar');
+        const content = document.querySelector('.content');
+        const detailsPanel = document.querySelector('.details-panel');
+        const teamManagement = document.querySelector('.team-management');
+        
+        // Reset all
+        sidebar?.classList.remove('mobile-active');
+        detailsPanel?.classList.remove('mobile-active');
+        
+        switch(tabName) {
+            case 'players':
+                // Show main table
+                if (content) content.style.display = 'flex';
+                break;
+                
+            case 'team':
+                // Show team management
+                if (content) content.style.display = 'none';
+                if (teamManagement) teamManagement.style.display = 'grid';
+                break;
+                
+            case 'filters':
+                // Show sidebar
+                if (content) content.style.display = 'none';
+                sidebar?.classList.add('mobile-active');
+                break;
+                
+            case 'details':
+                // Show details panel
+                if (content) content.style.display = 'none';
+                detailsPanel?.classList.add('mobile-active');
+                break;
+        }
     }
 
-    loadCSVFile(inputId) {
-        const fileInput = document.getElementById(inputId);
+    loadCSVFile() {
+        const fileInput = document.getElementById('csvFile');
         const file = fileInput.files[0];
 
         if (!file) {
@@ -187,13 +179,6 @@ class FantacalcioApp {
             try {
                 const csvText = e.target.result;
                 this.parseCSV(csvText);
-                
-                // Sync file inputs
-                if (inputId === 'csvFile') {
-                    document.getElementById('mobileCSVFile').files = fileInput.files;
-                } else {
-                    document.getElementById('csvFile').files = fileInput.files;
-                }
             } catch (error) {
                 console.error('Errore nella lettura del file:', error);
                 this.updateStatus('Errore nella lettura del file CSV', 'error');
@@ -227,8 +212,7 @@ class FantacalcioApp {
 
             this.filteredData = [...this.data];
             this.populateFilters();
-            this.applyQuickFilter(this.currentQuickFilter, false);
-            this.applyQuickFilter(this.currentQuickFilter, true);
+            this.applyQuickFilter(this.currentQuickFilter);
             this.updateStatus(`Dati caricati: ${this.data.length} giocatori`);
 
         } catch (error) {
@@ -260,10 +244,8 @@ class FantacalcioApp {
     }
 
     populateFilters() {
-        // Popola filtri desktop e mobile
         const teams = [...new Set(this.data.map(player => player.Squadra))].sort();
         
-        // Desktop filters
         const teamSelect = document.getElementById('team');
         if (teamSelect) {
             teamSelect.innerHTML = '<option value="">Tutte</option>';
@@ -277,21 +259,6 @@ class FantacalcioApp {
             });
         }
 
-        // Mobile filters
-        const mobileTeamSelect = document.getElementById('mobileTeam');
-        if (mobileTeamSelect) {
-            mobileTeamSelect.innerHTML = '<option value="">Tutte</option>';
-            teams.forEach(team => {
-                if (team) {
-                    const option = document.createElement('option');
-                    option.value = team;
-                    option.textContent = team;
-                    mobileTeamSelect.appendChild(option);
-                }
-            });
-        }
-
-        // Popola filtro skills
         const allSkills = new Set();
         this.data.forEach(player => {
             if (player.Skills) {
@@ -306,7 +273,6 @@ class FantacalcioApp {
             }
         });
 
-        // Desktop skills
         const skillSelect = document.getElementById('skill');
         if (skillSelect) {
             skillSelect.innerHTML = '<option value="">Tutte</option>';
@@ -321,7 +287,7 @@ class FantacalcioApp {
         }
     }
 
-    applyQuickFilter(filterType, isMobile = false) {
+    applyQuickFilter(filterType) {
         if (this.data.length === 0) {
             this.updateStatus('Carica prima un file CSV', 'error');
             return;
@@ -329,32 +295,17 @@ class FantacalcioApp {
 
         this.currentQuickFilter = filterType;
         
-        // Aggiorna UI dei bottoni
-        const filterSelector = isMobile ? '.mobile-quick-filter' : '.quick-filter-btn';
-        document.querySelectorAll(filterSelector).forEach(btn => {
+        document.querySelectorAll('.quick-filter-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        
-        if (isMobile) {
-            document.querySelector(`.mobile-quick-filter[data-filter="${filterType}"]`)?.classList.add('active');
-        } else {
-            document.querySelector(`.quick-filter-btn[data-filter="${filterType}"]`)?.classList.add('active');
-        }
+        document.querySelector(`.quick-filter-btn[data-filter="${filterType}"]`)?.classList.add('active');
 
-        // Reset dei filtri di ricerca quando si applica un filtro rapido
-        if (isMobile) {
-            document.getElementById('mobileSearchForm')?.reset();
-            const minScore = document.getElementById('mobileMinScore');
-            const maxScore = document.getElementById('mobileMaxScore');
-            if (minScore) minScore.value = 0;
-            if (maxScore) maxScore.value = 100;
-        } else {
-            document.getElementById('searchForm')?.reset();
-            const minScore = document.getElementById('minScore');
-            const maxScore = document.getElementById('maxScore');
-            if (minScore) minScore.value = 0;
-            if (maxScore) maxScore.value = 100;
-        }
+        // Reset search form
+        document.getElementById('searchForm')?.reset();
+        const minScore = document.getElementById('minScore');
+        const maxScore = document.getElementById('maxScore');
+        if (minScore) minScore.value = 0;
+        if (maxScore) maxScore.value = 100;
 
         let filteredData = [...this.data];
 
@@ -390,14 +341,12 @@ class FantacalcioApp {
     }
 
     displayData(data) {
-        const tableId = this.isMobile ? 'playersTable' : 'desktopPlayersTable';
-        const tbody = document.querySelector(`#${tableId} tbody`);
-        
+        const tbody = document.querySelector('#playersTable tbody');
         if (!tbody) return;
         
         tbody.innerHTML = '';
 
-        data.forEach((player, index) => {
+        data.forEach((player) => {
             const row = document.createElement('tr');
             
             const nome = player.Nome || '';
@@ -410,7 +359,6 @@ class FantacalcioApp {
             const isAcquired = this.acquiredPlayers.has(player.id);
             const isMyPlayer = this.myTeam.some(p => p.id === player.id);
             
-            // Controlla se il ruolo è al limite
             const positionCategory = this.getPositionCategory(ruolo);
             const currentCount = this.myTeam.filter(p => this.getPositionCategory(p.ruolo) === positionCategory).length;
             const isPositionFull = currentCount >= this.positionLimits[positionCategory];
@@ -418,50 +366,30 @@ class FantacalcioApp {
             if (isAcquired) row.classList.add('acquired');
             if (isMyPlayer) row.classList.add('my-player');
             
-            // Mobile layout - simplified table
-            if (this.isMobile) {
-                row.innerHTML = `
-                    <td>${nome}</td>
-                    <td>${ruolo}</td>
-                    <td>${punteggio}</td>
-                    <td>
-                        ${!isMyPlayer && !isAcquired ? 
-                            (isPositionFull ? 
-                                '<span style="color: #ff9800; font-size: 10px;">LIMITE</span>' :
-                                `<button class="btn btn-primary btn-small" data-player-id="${player.id}" style="padding: 4px 8px; font-size: 10px;">Acquista</button>`
-                            ) :
-                            isMyPlayer ? '<span style="color: #4CAF50; font-weight: bold; font-size: 10px;">MIO</span>' :
-                            '<span style="color: #f44336; font-size: 10px;">PRESO</span>'
-                        }
-                    </td>
-                `;
-            } else {
-                // Desktop layout - full table
-                row.innerHTML = `
-                    <td>
-                        <input type="checkbox" class="status-checkbox" ${isAcquired ? 'checked' : ''} 
-                               data-player-id="${player.id}">
-                    </td>
-                    <td>${nome}</td>
-                    <td>${ruolo}</td>
-                    <td>${squadra}</td>
-                    <td>${fantamedia}</td>
-                    <td>${punteggio}</td>
-                    <td class="trend-${trend.toLowerCase()}">${trend}</td>
-                    <td>
-                        ${!isMyPlayer && !isAcquired ? 
-                            (isPositionFull ? 
-                                '<span style="color: #ff9800; font-size: 12px;">LIMITE</span>' :
-                                `<button class="btn btn-primary btn-small" data-player-id="${player.id}">Acquista</button>`
-                            ) :
-                            isMyPlayer ? '<span style="color: #4CAF50; font-weight: bold;">MIO</span>' :
-                            '<span style="color: #f44336;">PRESO</span>'
-                        }
-                    </td>
-                `;
-            }
+            row.innerHTML = `
+                <td class="desktop-only">
+                    <input type="checkbox" class="status-checkbox" ${isAcquired ? 'checked' : ''} 
+                           data-player-id="${player.id}">
+                </td>
+                <td>${nome}</td>
+                <td>${ruolo}</td>
+                <td class="desktop-only">${squadra}</td>
+                <td class="desktop-only">${fantamedia}</td>
+                <td>${punteggio}</td>
+                <td class="desktop-only trend-${trend.toLowerCase()}">${trend}</td>
+                <td>
+                    ${!isMyPlayer && !isAcquired ? 
+                        (isPositionFull ? 
+                            '<span style="color: #ff9800; font-size: 12px;">LIMITE</span>' :
+                            `<button class="btn btn-primary btn-small" data-player-id="${player.id}">Acquista</button>`
+                        ) :
+                        isMyPlayer ? '<span style="color: #4CAF50; font-weight: bold;">MIO</span>' :
+                        '<span style="color: #f44336;">PRESO</span>'
+                    }
+                </td>
+            `;
             
-            // Aggiungi event listeners per checkbox e bottone
+            // Event listeners
             const checkbox = row.querySelector('.status-checkbox');
             if (checkbox) {
                 checkbox.addEventListener('change', () => {
@@ -499,17 +427,6 @@ class FantacalcioApp {
         this.displayData(this.filteredData);
     }
 
-    calculateAverageBudget() {
-        const remainingBudget = this.getRemainingBudget();
-        const remainingSlots = 25 - this.myTeam.length;
-        
-        if (remainingSlots <= 0) {
-            return 0;
-        }
-        
-        return Math.floor(remainingBudget / remainingSlots);
-    }
-
     openPurchaseModal(playerId) {
         const player = this.data.find(p => p.id === playerId);
         
@@ -518,7 +435,6 @@ class FantacalcioApp {
             return;
         }
 
-        // Controlla limiti di ruolo
         const positionCategory = this.getPositionCategory(player.Ruolo);
         const currentCount = this.myTeam.filter(p => this.getPositionCategory(p.ruolo) === positionCategory).length;
         const limit = this.positionLimits[positionCategory];
@@ -532,7 +448,6 @@ class FantacalcioApp {
         document.getElementById('modalPlayerName').textContent = player.Nome || '';
         document.getElementById('modalPlayerRole').textContent = player.Ruolo || '';
         
-        // Calcola budget medio suggerito
         const averageBudget = this.calculateAverageBudget();
         const remainingBudget = this.getRemainingBudget();
         const remainingSlots = 25 - this.myTeam.length;
@@ -560,7 +475,6 @@ class FantacalcioApp {
 
         const player = this.currentPlayerForPurchase;
         
-        // Ricontrolla i limiti prima dell'acquisto
         const positionCategory = this.getPositionCategory(player.Ruolo);
         const currentCount = this.myTeam.filter(p => this.getPositionCategory(p.ruolo) === positionCategory).length;
         const limit = this.positionLimits[positionCategory];
@@ -620,28 +534,32 @@ class FantacalcioApp {
             .reduce((total, player) => total + player.price, 0);
     }
 
-    updateTeamDisplay() {
-        // Update desktop team display
-        this.updateDesktopTeamDisplay();
+    calculateAverageBudget() {
+        const remainingBudget = this.getRemainingBudget();
+        const remainingSlots = 25 - this.myTeam.length;
         
-        // Update mobile team display
-        this.updateMobileTeamDisplay();
+        if (remainingSlots <= 0) {
+            return 0;
+        }
+        
+        return Math.floor(remainingBudget / remainingSlots);
     }
 
-    updateDesktopTeamDisplay() {
+    updateTeamDisplay() {
         const teamList = document.getElementById('myTeamList');
         const teamCount = document.getElementById('teamCount');
+        const mobileTeamCount = document.getElementById('mobileTeamCount');
         
-        if (!teamList || !teamCount) return;
+        if (teamCount) teamCount.textContent = this.myTeam.length;
+        if (mobileTeamCount) mobileTeamCount.textContent = this.myTeam.length;
         
-        teamCount.textContent = this.myTeam.length;
+        if (!teamList) return;
         
         if (this.myTeam.length === 0) {
             teamList.innerHTML = '<p class="empty-team">Nessun giocatore acquistato</p>';
             return;
         }
 
-        // Raggruppa i giocatori per posizione
         const positions = {
             'Portieri': [],
             'Difensori': [],
@@ -654,7 +572,6 @@ class FantacalcioApp {
             positions[category].push(player);
         });
 
-        // Ordina i giocatori per nome in ogni posizione
         Object.keys(positions).forEach(pos => {
             positions[pos].sort((a, b) => a.nome.localeCompare(b.nome));
         });
@@ -682,7 +599,7 @@ class FantacalcioApp {
                                             <div class="team-player-details">${player.squadra}</div>
                                         </div>
                                         <div class="team-player-price">${player.price} crediti</div>
-                                        <button class="remove-player" data-remove-id="${player.id}">✕</button>
+                                        <button class="remove-player" onclick="app.removePlayerFromTeam('${player.id}')">✕</button>
                                     </div>
                                 `).join('')
                             }
@@ -691,56 +608,6 @@ class FantacalcioApp {
                 }).join('')}
             </div>
         `;
-
-        // Aggiungi event listeners per i bottoni rimuovi
-        document.querySelectorAll('[data-remove-id]').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const playerId = button.getAttribute('data-remove-id');
-                this.removePlayerFromTeam(playerId);
-            });
-        });
-    }
-
-    updateMobileTeamDisplay() {
-        const mobileTeamList = document.getElementById('mobileTeamList');
-        const mobileTeamCount = document.getElementById('mobileTeamCount');
-        
-        if (!mobileTeamList || !mobileTeamCount) return;
-        
-        mobileTeamCount.textContent = this.myTeam.length;
-        
-        if (this.myTeam.length === 0) {
-            mobileTeamList.innerHTML = '<p class="empty-team">Nessun giocatore acquistato</p>';
-            return;
-        }
-
-        // Mobile simplified team display
-        const teamHTML = this.myTeam.map(player => `
-            <div class="team-player" style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-weight: bold; font-size: 14px;">${player.nome}</div>
-                        <div style="font-size: 12px; color: #666;">${player.ruolo} - ${player.squadra}</div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-weight: bold; color: #2196F3;">${player.price} crediti</span>
-                        <button class="remove-player" data-remove-id="${player.id}" style="background: #f44336; color: white; border: none; border-radius: 3px; padding: 4px 8px; font-size: 12px;">✕</button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-
-        mobileTeamList.innerHTML = teamHTML;
-
-        // Aggiungi event listeners per i bottoni rimuovi
-        document.querySelectorAll('[data-remove-id]').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const playerId = button.getAttribute('data-remove-id');
-                this.removePlayerFromTeam(playerId);
-            });
-        });
     }
 
     updateBudgetDisplay() {
@@ -748,25 +615,15 @@ class FantacalcioApp {
         const remaining = this.totalBudget - spent;
         const averageBudget = this.calculateAverageBudget();
         
-        // Desktop budget display
         const spentElement = document.getElementById('spentBudget');
         const remainingElement = document.getElementById('remainingBudget');
         const averageElement = document.getElementById('averageBudget');
+        const mobileBudgetElement = document.getElementById('mobileBudget');
         
         if (spentElement) spentElement.textContent = spent;
         if (remainingElement) remainingElement.textContent = remaining;
         if (averageElement) averageElement.textContent = `Budget medio: ${averageBudget} crediti per giocatore`;
-        
-        // Mobile budget display
-        const mobileRemainingElement = document.getElementById('mobileBudgetRemaining');
-        const mobileSpentElement = document.getElementById('mobileSpentBudget');
-        const mobileRemainingBudgetElement = document.getElementById('mobileRemainingBudget');
-        const mobileAverageElement = document.getElementById('mobileAverageBudget');
-        
-        if (mobileRemainingElement) mobileRemainingElement.textContent = remaining;
-        if (mobileSpentElement) mobileSpentElement.textContent = spent;
-        if (mobileRemainingBudgetElement) mobileRemainingBudgetElement.textContent = remaining;
-        if (mobileAverageElement) mobileAverageElement.textContent = averageBudget;
+        if (mobileBudgetElement) mobileBudgetElement.textContent = remaining;
         
         const budgetDisplay = document.querySelector('.budget-display');
         if (budgetDisplay) {
@@ -847,14 +704,16 @@ class FantacalcioApp {
         
         row.classList.add('selected');
         this.showPlayerDetails(player);
+        
+        // Auto switch to details on mobile
+        if (window.innerWidth <= 768) {
+            this.switchMobileTab('details');
+        }
     }
 
     showPlayerDetails(player) {
-        // Desktop details
         const detailsContainer = document.getElementById('playerDetails');
-        
-        // Mobile details
-        const mobileDetailsContainer = document.getElementById('mobilePlayerDetails');
+        if (!detailsContainer) return;
         
         let detailsHTML = '';
         
@@ -874,33 +733,25 @@ class FantacalcioApp {
             }
         });
         
-        if (detailsContainer) detailsContainer.innerHTML = detailsHTML;
-        if (mobileDetailsContainer) mobileDetailsContainer.innerHTML = detailsHTML;
-        
-        // Auto switch to details tab on mobile
-        if (this.isMobile) {
-            this.switchMobileTab('details');
-        }
+        detailsContainer.innerHTML = detailsHTML;
     }
 
-    searchPlayers(isMobile = false) {
+    searchPlayers() {
         if (this.data.length === 0) {
             this.updateStatus('Carica prima un file CSV', 'error');
             return;
         }
 
-        const prefix = isMobile ? 'mobile' : '';
-        const name = document.getElementById(`${prefix}${prefix ? 'PlayerName' : 'playerName'}`)?.value.toLowerCase() || '';
-        const role = document.getElementById(`${prefix}${prefix ? 'Role' : 'role'}`)?.value || '';
-        const team = document.getElementById(`${prefix}${prefix ? 'Team' : 'team'}`)?.value || '';
-        const skill = document.getElementById(`${prefix ? '' : 'skill'}`)?.value || '';
-        const minScore = parseFloat(document.getElementById(`${prefix}${prefix ? 'MinScore' : 'minScore'}`)?.value || 0);
-        const maxScore = parseFloat(document.getElementById(`${prefix}${prefix ? 'MaxScore' : 'maxScore'}`)?.value || 100);
-        const hideAcquired = document.getElementById(`${prefix}${prefix ? 'HideAcquired' : 'hideAcquired'}`)?.checked || false;
+        const name = document.getElementById('playerName')?.value.toLowerCase() || '';
+        const role = document.getElementById('role')?.value || '';
+        const team = document.getElementById('team')?.value || '';
+        const skill = document.getElementById('skill')?.value || '';
+        const minScore = parseFloat(document.getElementById('minScore')?.value || 0);
+        const maxScore = parseFloat(document.getElementById('maxScore')?.value || 100);
+        const hideAcquired = document.getElementById('hideAcquired')?.checked || false;
 
-        // Reset del filtro rapido se si usa la ricerca avanzata
         this.currentQuickFilter = 'tutti';
-        document.querySelectorAll('.quick-filter-btn, .mobile-quick-filter').forEach(btn => {
+        document.querySelectorAll('.quick-filter-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         document.querySelector('[data-filter="tutti"]')?.classList.add('active');
@@ -935,34 +786,22 @@ class FantacalcioApp {
 
         this.displayData(this.filteredData);
         
-        // Switch to players tab on mobile after search
-        if (isMobile) {
+        // Switch to players tab on mobile
+        if (window.innerWidth <= 768) {
             this.switchMobileTab('players');
         }
     }
 
-    resetFilters(isMobile = false) {
-        if (isMobile) {
-            document.getElementById('mobileSearchForm')?.reset();
-            const minScore = document.getElementById('mobileMinScore');
-            const maxScore = document.getElementById('mobileMaxScore');
-            if (minScore) minScore.value = 0;
-            if (maxScore) maxScore.value = 100;
-        } else {
-            document.getElementById('searchForm')?.reset();
-            const minScore = document.getElementById('minScore');
-            const maxScore = document.getElementById('maxScore');
-            if (minScore) minScore.value = 0;
-            if (maxScore) maxScore.value = 100;
-        }
+    resetFilters() {
+        document.getElementById('searchForm')?.reset();
+        const minScore = document.getElementById('minScore');
+        const maxScore = document.getElementById('maxScore');
+        if (minScore) minScore.value = 0;
+        if (maxScore) maxScore.value = 100;
         
-        // Reset anche il filtro rapido
-        this.applyQuickFilter('tutti', isMobile);
+        this.applyQuickFilter('tutti');
         
-        const detailsContainer = isMobile ? 
-            document.getElementById('mobilePlayerDetails') : 
-            document.getElementById('playerDetails');
-            
+        const detailsContainer = document.getElementById('playerDetails');
         if (detailsContainer) {
             detailsContainer.innerHTML = 
                 '<p>Seleziona un giocatore dalla tabella per visualizzarne i dettagli</p>';
@@ -972,9 +811,7 @@ class FantacalcioApp {
     sortTable(columnIndex) {
         if (this.filteredData.length === 0) return;
 
-        const columns = this.isMobile ? 
-            ['Nome', 'Ruolo', 'Punteggio', 'actions'] :
-            ['status', 'Nome', 'Ruolo', 'Squadra', 'Fantamedia 2024-2025', 'Punteggio', 'Trend', 'actions'];
+        const columns = ['status', 'Nome', 'Ruolo', 'Squadra', 'Fantamedia 2024-2025', 'Punteggio', 'Trend', 'actions'];
         const column = columns[columnIndex];
 
         if (column === 'status' || column === 'actions') return;
@@ -1005,16 +842,10 @@ class FantacalcioApp {
 
     updateStatus(message, type = 'success') {
         const statusLabel = document.getElementById('statusLabel');
-        const desktopStatusLabel = document.getElementById('desktopStatusLabel');
         
         if (statusLabel) {
             statusLabel.textContent = message;
             statusLabel.className = type === 'error' ? 'error' : '';
-        }
-        
-        if (desktopStatusLabel) {
-            desktopStatusLabel.textContent = message;
-            desktopStatusLabel.className = type === 'error' ? 'error' : '';
         }
     }
 }
