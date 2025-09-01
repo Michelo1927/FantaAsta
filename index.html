@@ -13,8 +13,26 @@
             <p>Gestione Asta Fantacalcio</p>
         </header>
 
-        <!-- Sezione gestione squadra -->
-        <div class="team-management">
+        <!-- Mobile Tab Navigation (visible only on mobile) -->
+        <div class="mobile-tabs">
+            <button class="mobile-tab active" data-tab="players">🏠 Giocatori</button>
+            <button class="mobile-tab" data-tab="team">👥 Squadra</button>
+            <button class="mobile-tab" data-tab="filters">⚙️ Filtri</button>
+            <button class="mobile-tab" data-tab="details">📊 Dettagli</button>
+        </div>
+
+        <!-- Mobile Budget Bar (visible only on mobile) -->
+        <div class="mobile-budget-bar">
+            <div class="mobile-budget-info">
+                <span id="mobileBudgetRemaining">500</span> crediti
+            </div>
+            <div class="mobile-team-count">
+                <span id="mobileTeamCount">0</span>/25
+            </div>
+        </div>
+
+        <!-- Desktop Team Management (hidden on mobile) -->
+        <div class="team-management desktop-only">
             <div class="budget-info">
                 <h3>Budget Disponibile</h3>
                 <div class="budget-display">
@@ -44,7 +62,8 @@
         </div>
 
         <div class="main-content">
-            <aside class="sidebar">
+            <!-- Desktop Sidebar (hidden on mobile) -->
+            <aside class="sidebar desktop-only">
                 <div class="search-panel">
                     <h3>Carica File CSV</h3>
                     <div class="form-group">
@@ -118,32 +137,156 @@
                 </div>
             </aside>
 
+            <!-- Main Content Area -->
             <main class="content">
-                <div class="status-bar">
-                    <span id="statusLabel">Carica il file CSV per iniziare</span>
+                <!-- Mobile Content Sections -->
+                <div class="mobile-content-section active" id="mobile-players">
+                    <div class="mobile-file-upload">
+                        <input type="file" id="mobileCSVFile" accept=".csv" class="mobile-file-input">
+                        <button type="button" id="mobileLoadCsvBtn" class="btn btn-primary">Carica CSV</button>
+                    </div>
+                    
+                    <div class="mobile-quick-filters">
+                        <button class="mobile-quick-filter active" data-filter="tutti">Tutti</button>
+                        <button class="mobile-quick-filter" data-filter="titolari">Titolari</button>
+                        <button class="mobile-quick-filter" data-filter="giovani">Giovani</button>
+                        <button class="mobile-quick-filter" data-filter="rigoristi">Rigoristi</button>
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span id="statusLabel">Carica il file CSV per iniziare</span>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="playersTable">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Ruolo</th>
+                                    <th>Punteggio</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                
-                <div class="table-container">
-                    <table id="playersTable">
-                        <thead>
-                            <tr>
-                                <th>Stato</th>
-                                <th>Nome</th>
-                                <th>Ruolo</th>
-                                <th>Squadra</th>
-                                <th>Fantamedia 2024-2025</th>
-                                <th>Punteggio</th>
-                                <th>Trend</th>
-                                <th>Azioni</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+
+                <div class="mobile-content-section" id="mobile-team">
+                    <div class="mobile-team-header">
+                        <h3>La Mia Squadra</h3>
+                        <div class="mobile-team-controls">
+                            <button id="mobileExportTeamBtn" class="btn btn-primary btn-small">Esporta</button>
+                            <button id="mobileClearTeamBtn" class="btn btn-secondary btn-small">Svuota</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mobile-budget-details">
+                        <div class="mobile-budget-item">
+                            <span>Rimanente:</span>
+                            <span id="mobileRemainingBudget">500</span> crediti
+                        </div>
+                        <div class="mobile-budget-item">
+                            <span>Speso:</span>
+                            <span id="mobileSpentBudget">0</span> crediti
+                        </div>
+                        <div class="mobile-budget-item">
+                            <span>Budget medio:</span>
+                            <span id="mobileAverageBudget">0</span> crediti
+                        </div>
+                    </div>
+                    
+                    <div id="mobileTeamList" class="mobile-team-list">
+                        <p class="empty-team">Nessun giocatore acquistato</p>
+                    </div>
+                </div>
+
+                <div class="mobile-content-section" id="mobile-filters">
+                    <form id="mobileSearchForm">
+                        <div class="form-group">
+                            <label for="mobilePlayerName">Nome giocatore:</label>
+                            <input type="text" id="mobilePlayerName" placeholder="Cerca per nome...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mobileRole">Ruolo:</label>
+                            <select id="mobileRole">
+                                <option value="">Tutti</option>
+                                <option value="POR">POR</option>
+                                <option value="DIF">DIF</option>
+                                <option value="CEN">CEN</option>
+                                <option value="TRQ">TRQ</option>
+                                <option value="ATT">ATT</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mobileTeam">Squadra:</label>
+                            <select id="mobileTeam">
+                                <option value="">Tutte</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mobileMinScore">Punteggio minimo:</label>
+                            <input type="number" id="mobileMinScore" min="0" max="100" step="0.1" value="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mobileMaxScore">Punteggio massimo:</label>
+                            <input type="number" id="mobileMaxScore" min="0" max="100" step="0.1" value="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="mobileHideAcquired"> Nascondi giocatori presi
+                            </label>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-primary">Applica Filtri</button>
+                            <button type="button" id="mobileResetBtn" class="btn btn-secondary">Reset</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="mobile-content-section" id="mobile-details">
+                    <h3>Dettagli Giocatore</h3>
+                    <div id="mobilePlayerDetails" class="mobile-details-content">
+                        <p>Seleziona un giocatore dalla lista per visualizzarne i dettagli</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Table (hidden on mobile) -->
+                <div class="desktop-table-section desktop-only">
+                    <div class="status-bar">
+                        <span id="desktopStatusLabel">Carica il file CSV per iniziare</span>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="desktopPlayersTable">
+                            <thead>
+                                <tr>
+                                    <th>Stato</th>
+                                    <th>Nome</th>
+                                    <th>Ruolo</th>
+                                    <th>Squadra</th>
+                                    <th>Fantamedia 2024-2025</th>
+                                    <th>Punteggio</th>
+                                    <th>Trend</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </main>
 
-            <aside class="details-panel">
+            <!-- Desktop Details Panel (hidden on mobile) -->
+            <aside class="details-panel desktop-only">
                 <div class="player-details">
                     <h3>Dettagli Giocatore</h3>
                     <div id="playerDetails" class="details-content">
