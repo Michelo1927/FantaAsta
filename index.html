@@ -43,6 +43,55 @@
             </div>
         </div>
 
+        <!-- Sezione Strategia -->
+        <div class="strategy-panel">
+            <div class="strategy-analysis">
+                <h3>📊 Analisi Strategica</h3>
+                <div class="strategy-tabs">
+                    <button class="strategy-tab active" data-tab="analysis">Analisi</button>
+                    <button class="strategy-tab" data-tab="suggestions">Suggerimenti</button>
+                </div>
+                
+                <div id="strategy-analysis" class="strategy-content active">
+                    <div id="squadraAnalysis" class="analysis-box">
+                        <p>Acquista giocatori per vedere l'analisi della squadra</p>
+                    </div>
+                </div>
+                <div id="strategy-suggestions" class="strategy-content">
+                    <div class="suggestions-header">
+                        <div class="budget-input">
+                            <label>Budget disponibile:</label>
+                            <input type="number" id="suggestionBudget" value="50" min="1" max="500">
+                            <select id="suggestionRole">
+                                <option value="">Tutti i ruoli</option>
+                                <option value="POR">POR</option>
+                                <option value="DIF">DIF</option>
+                                <option value="CEN">CEN</option>
+                                <option value="TRQ">TRQ</option>
+                                <option value="ATT">ATT</option>
+                            </select>
+                            <button id="getSuggestions" class="btn btn-primary btn-small">Cerca Occasioni</button>
+                        </div>
+                        
+                        <div class="suggestions-controls">
+                            <label>Ordina per:</label>
+                            <select id="suggestionSort">
+                                <option value="convenienza">Convenienza</option>
+                                <option value="prezzo-asc">Prezzo (crescente)</option>
+                                <option value="prezzo-desc">Prezzo (decrescente)</option>
+                                <option value="punteggio">Punteggio</option>
+                                <option value="nome">Nome</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="suggestionsList">
+                        <p>Imposta un budget e clicca "Cerca Occasioni" per vedere i suggerimenti</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="main-content">
             <aside class="sidebar">
                 <div class="search-panel">
